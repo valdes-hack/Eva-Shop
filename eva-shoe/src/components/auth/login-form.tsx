@@ -75,12 +75,25 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-sm border">
+    <div className="bg-white p-8 rounded-xl shadow-sm border relative">
+      {/* Lien retour à l'accueil dans la carte */}
+      <div className="mb-6">
+        <Link 
+          href="/" 
+          className="inline-flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors group"
+        >
+          <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-900 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Retour à l'accueil</span>
+        </Link>
+      </div>
+
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           Se connecter
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 text-sm">
           Accédez à votre compte EVA SHOE
         </p>
       </div>

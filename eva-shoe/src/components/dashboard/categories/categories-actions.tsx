@@ -3,7 +3,11 @@
 
 import Link from 'next/link'
 
-export default function CategoriesActions() {
+interface CategoriesActionsProps {
+  onRefresh?: () => void
+}
+
+export default function CategoriesActions({ onRefresh }: CategoriesActionsProps) {
   return (
     <div className="flex items-center gap-3">
       {/* Bouton Importer */}

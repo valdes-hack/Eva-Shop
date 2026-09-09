@@ -1,7 +1,7 @@
 // src/lib/hooks/use-categories.ts
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   getCategories, 
   createCategory, 
@@ -9,7 +9,7 @@ import {
   deleteCategory,
   bulkUpdateCategories,
   bulkDeleteCategories,
-  getCategoryStats
+  getCategoriesStats
 } from '@/lib/services/category.service'
 import type { 
   Category, 
@@ -21,6 +21,7 @@ import type {
 interface UseCategoriesReturn {
   categories: Category[]
   stats: CategoryStats | null
+  totalCount: number
   isLoading: boolean
   error: string | null
   refetch: () => Promise<void>
@@ -33,21 +34,23 @@ interface UseCategoriesReturn {
 
 export function useCategories(filters?: CategoryFilters): UseCategoriesReturn {
   const [categories, setCategories] = useState<Category[]>([])
+  const [totalCount, setTotalCount] = useState<number>(0)
   const [stats, setStats] = useState<CategoryStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
 
-      const [categoriesData, statsData] = await Promise.all([
+      const [resCategories, statsData] = await Promise.all([
         getCategories(filters),
-        getCategoryStats()
+        getCategoriesStats()
       ])
 
-      setCategories(categoriesData)
+      setCategories(resCategories.data)
+      setTotalCount(resCategories.count)
       setStats(statsData)
 
     } catch (err) {
@@ -56,12 +59,12 @@ export function useCategories(filters?: CategoryFilters): UseCategoriesReturn {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [JSON.stringify(filters)])
 
   const create = async (data: CategoryFormData): Promise<Category> => {
     try {
       const newCategory = await createCategory(data)
-      await fetchData() // Actualiser la liste
+      await fetchData()
       return newCategory
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la création'
@@ -73,7 +76,7 @@ export function useCategories(filters?: CategoryFilters): UseCategoriesReturn {
   const update = async (id: string, data: Partial<CategoryFormData>): Promise<Category> => {
     try {
       const updatedCategory = await updateCategory(id, data)
-      await fetchData() // Actualiser la liste
+      await fetchData()
       return updatedCategory
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise à jour'
@@ -85,7 +88,7 @@ export function useCategories(filters?: CategoryFilters): UseCategoriesReturn {
   const remove = async (id: string): Promise<void> => {
     try {
       await deleteCategory(id)
-      await fetchData() // Actualiser la liste
+      await fetchData()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la suppression'
       setError(errorMessage)
@@ -96,7 +99,7 @@ export function useCategories(filters?: CategoryFilters): UseCategoriesReturn {
   const bulkUpdate = async (ids: string[], updates: Partial<CategoryFormData>): Promise<void> => {
     try {
       await bulkUpdateCategories(ids, updates)
-      await fetchData() // Actualiser la liste
+      await fetchData()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise à jour en lot'
       setError(errorMessage)
@@ -107,7 +110,7 @@ export function useCategories(filters?: CategoryFilters): UseCategoriesReturn {
   const bulkDelete = async (ids: string[]): Promise<void> => {
     try {
       await bulkDeleteCategories(ids)
-      await fetchData() // Actualiser la liste
+      await fetchData()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la suppression en lot'
       setError(errorMessage)
@@ -117,11 +120,12 @@ export function useCategories(filters?: CategoryFilters): UseCategoriesReturn {
 
   useEffect(() => {
     fetchData()
-  }, [filters])
+  }, [fetchData])
 
   return {
     categories,
     stats,
+    totalCount,
     isLoading,
     error,
     refetch: fetchData,

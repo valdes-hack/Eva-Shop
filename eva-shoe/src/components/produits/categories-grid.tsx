@@ -1,4 +1,4 @@
-// src/components/categories/categories-grid.tsx
+// src/components/produits/categories-grid.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -34,8 +34,8 @@ export default function CategoriesGrid({ searchParams }: CategoriesGridProps) {
           sort_direction: 'asc' as const
         }
         
-        const data = await getCategories(filters)
-        setCategories(data)
+        const res = await getCategories(filters)
+        setCategories(res.data)
       } catch (err) {
         setError('Erreur lors du chargement des catégories')
         console.error(err)
@@ -155,7 +155,7 @@ export default function CategoriesGrid({ searchParams }: CategoriesGridProps) {
               
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">
-                  {category.products_count} produit{category.products_count > 1 ? 's' : ''}
+                  {category.products_count || 0} produit{(category.products_count || 0) > 1 ? 's' : ''}
                 </span>
                 
                 {category.parent_name && (

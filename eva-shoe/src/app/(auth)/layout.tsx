@@ -7,8 +7,26 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Bouton Retour à l'accueil fixe en haut à gauche */}
+      <div className="absolute top-6 left-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-bold text-gray-700 hover:text-black bg-white hover:bg-gray-100 border border-gray-200 px-3.5 py-2 rounded-xl transition-all shadow-xs group"
+        >
+          <svg 
+            className="w-4 h-4 text-gray-500 group-hover:text-black group-hover:-translate-x-0.5 transition-transform" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Retour à l'accueil</span>
+        </Link>
+      </div>
+
+      <div className="max-w-md w-full mx-auto space-y-8">
         {/* Logo */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
@@ -30,4 +48,4 @@ export default function AuthLayout({
       </div>
     </div>
   )
-}
+}
