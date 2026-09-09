@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getCategoriesStats } from '@/lib/services/category.service'
+import { getCategoriesStats } from '@/lib/services/category-optimized.service'
 
 interface CategoryStats {
   total: number
@@ -132,4 +132,4 @@ export default function CategoriesStats() {
       ))}
     </div>
   )
-}
+}

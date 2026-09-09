@@ -72,19 +72,19 @@ CREATE TABLE IF NOT EXISTS public.product_attribute_values (
 -- 3. FONCTION POUR CALCULER LE CHEMIN HIÉRARCHIQUE
 -- =====================================================
 
-CREATE OR REPLACE FUNCTION calculate_hierarchy_path(category_id UUID)
+CREATE OR REPLACE FUNCTION calculate_hierarchy_path(input_category_id UUID)
 RETURNS TEXT AS $$
 DECLARE
   path TEXT := '';
-  current_id UUID := category_id;
+  current_id UUID := input_category_id;
   current_name TEXT;
-  parent_id UUID;
+  current_parent_id UUID;
 BEGIN
   -- Boucle pour remonter la hiérarchie
   WHILE current_id IS NOT NULL LOOP
-    SELECT name, parent_id INTO current_name, parent_id
-    FROM categories 
-    WHERE id = current_id;
+    SELECT c.name, c.parent_id INTO current_name, current_parent_id
+    FROM categories c 
+    WHERE c.id = current_id;
     
     IF current_name IS NOT NULL THEN
       IF path = '' THEN
@@ -94,7 +94,7 @@ BEGIN
       END IF;
     END IF;
     
-    current_id := parent_id;
+    current_id := current_parent_id;
   END LOOP;
   
   RETURN path;
@@ -121,8 +121,8 @@ BEGIN
     JOIN subcategories s ON c.parent_id = s.id
   )
   UPDATE categories 
-  SET hierarchy_path = calculate_hierarchy_path(id)
-  WHERE id IN (SELECT id FROM subcategories);
+  SET hierarchy_path = calculate_hierarchy_path(categories.id)
+  WHERE categories.id IN (SELECT id FROM subcategories);
   
   RETURN NEW;
 END;
@@ -139,25 +139,25 @@ CREATE TRIGGER trigger_update_hierarchy_path
 -- 5. FONCTION POUR HÉRITAGE DES ATTRIBUTS
 -- =====================================================
 
-CREATE OR REPLACE FUNCTION inherit_parent_attributes(category_id UUID)
+CREATE OR REPLACE FUNCTION inherit_parent_attributes(input_category_id UUID)
 RETURNS VOID AS $$
 DECLARE
-  parent_id UUID;
+  category_parent_id UUID;
   attr_record RECORD;
 BEGIN
   -- Récupérer l'ID du parent
-  SELECT parent_id INTO parent_id FROM categories WHERE id = category_id;
+  SELECT parent_id INTO category_parent_id FROM categories WHERE id = input_category_id;
   
-  IF parent_id IS NOT NULL THEN
+  IF category_parent_id IS NOT NULL THEN
     -- Copier les attributs du parent qui ne sont pas déjà assignés
     FOR attr_record IN 
       SELECT ca.attribute_id, ca.is_required, ca.display_order
       FROM category_attributes ca
-      WHERE ca.category_id = parent_id
+      WHERE ca.category_id = category_parent_id
       AND ca.attribute_id NOT IN (
         SELECT attribute_id 
         FROM category_attributes 
-        WHERE category_id = category_id
+        WHERE category_id = input_category_id
       )
     LOOP
       INSERT INTO category_attributes (
@@ -167,7 +167,7 @@ BEGIN
         is_inherited, 
         display_order
       ) VALUES (
-        category_id,
+        input_category_id,
         attr_record.attribute_id,
         attr_record.is_required,
         TRUE,
@@ -403,7 +403,7 @@ AND a.slug IN ('couleur', 'marque', 'matiere');
 
 -- Mettre à jour tous les chemins hiérarchiques
 UPDATE public.categories 
-SET hierarchy_path = calculate_hierarchy_path(id);
+SET hierarchy_path = calculate_hierarchy_path(categories.id);
 
 -- =====================================================
 -- 10. INDEX POUR OPTIMISER LES PERFORMANCES

@@ -5,12 +5,14 @@ import { useState, useEffect, useCallback } from 'react'
 import CategoriesStats from '@/components/dashboard/categories/categories-stats'
 import CategoriesActions from '@/components/dashboard/categories/categories-actions'
 import CategoriesFilters from '@/components/dashboard/categories/categories-filters'
-import CategoriesDataTable from '@/components/dashboard/categories/categories-data-table-optimized'
+import CategoriesDataTable from '@/components/dashboard/categories/categories-data-table-fixed'
+import Breadcrumb, { useDashboardBreadcrumb } from '@/components/dashboard/common/breadcrumb'
 import { useCategoriesFilters } from '@/lib/hooks/use-categories-filters'
 
 export default function CategoriesPage() {
   const filtersHook = useCategoriesFilters()
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const breadcrumb = useDashboardBreadcrumb()
 
   // Force refresh when filters change
   useEffect(() => {
@@ -22,15 +24,17 @@ export default function CategoriesPage() {
     setRefreshTrigger(prev => prev + 1)
   }, [])
 
+  const breadcrumbItems = [
+    breadcrumb.dashboard(),
+    breadcrumb.categories(),
+    breadcrumb.categoriesAttributes()
+  ]
+
   return (
     <div className="space-y-6">
       {/* Header avec breadcrumb */}
       <div>
-        <nav className="flex items-center gap-2 text-xs text-gray-500 mb-2">
-          <span>Tableau de bord</span>
-          <span>›</span>
-          <span className="text-gray-900 font-bold">Catégories</span>
-        </nav>
+        <Breadcrumb items={breadcrumbItems} />
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
